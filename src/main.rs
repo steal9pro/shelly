@@ -2,17 +2,32 @@
 use std::io::{self, Write};
 
 fn main() {
-    // Uncomment this block to pass the first stage
-    print!("$ ");
-    io::stdout().flush().unwrap();
+    run_loop()
+}
 
+fn run_loop() {
+    loop {
+        print!("$ ");
+        io::stdout().flush().unwrap();
+
+        let mut input = String::new();
+
+        wait_input(&mut input);
+        not_found(input)
+    }
+}
+
+fn wait_input(input: &mut String) {
     // Wait for user input
     let stdin = io::stdin();
-    let mut input = String::new();
-    stdin.read_line(&mut input).unwrap();
+    stdin.read_line(input).unwrap();
+}
 
-    let len = input.len();
-    input.truncate(len - 1);
-    print!("{}: command not found", input);
+fn not_found(cmd_name: String) {
+    let len = cmd_name.len();
+    let mut cmd_name = cmd_name;
+
+    cmd_name.truncate(len - 1);
+    print!("{}: command not found\n", cmd_name);
     io::stdout().flush().unwrap()
 }
