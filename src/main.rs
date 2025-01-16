@@ -7,6 +7,8 @@ fn main() {
 }
 
 fn repl() {
+    let available_cmds = vec!["exit", "echo", "type"];
+
     loop {
         print!("$ ");
         io::stdout().flush().unwrap();
@@ -19,6 +21,7 @@ fn repl() {
         match cmd {
             "exit" => process::exit(0x0100),
             "echo" => echo(args),
+            "type" => type_fn(&available_cmds, args),
             _ => not_found(input),
         }
     }
@@ -41,6 +44,15 @@ fn parse_command(input: &String) -> (&str, &str) {
     };
 
     return (cmd, args);
+}
+
+fn type_fn(cmds: &Vec<&str>, arg: &str) {
+    let idx = cmds.iter().position(|&cmd| cmd == arg);
+
+    match idx {
+        Some(_) => println!("{arg} is a shell builtin"),
+        None => print!("{}: command not found", arg),
+    }
 }
 
 fn echo(args: &str) {
