@@ -1,12 +1,12 @@
+use std::io::{self, Write};
 #[allow(unused_imports)]
 use std::process;
-use std::io::{self, Write};
 
 fn main() {
-    run_loop()
+    repl()
 }
 
-fn run_loop() {
+fn repl() {
     loop {
         print!("$ ");
         io::stdout().flush().unwrap();
@@ -16,11 +16,11 @@ fn run_loop() {
         wait_input(&mut input);
         let (cmd, args) = parse_command(&input);
 
-        if cmd == "exit" {
-            process::exit(0x0100);
+        match cmd {
+            "exit" => process::exit(0x0100),
+            "echo" => echo(args),
+            _ => not_found(input),
         }
-
-        not_found(input)
     }
 }
 
@@ -31,13 +31,20 @@ fn wait_input(input: &mut String) {
 }
 
 fn parse_command(input: &String) -> (&str, &str) {
-   let mut parts = input.split(" "); 
+    let input = input.trim();
 
-   let cmd = parts.next().unwrap();
+    let (cmd, args) = match input.split_once(" ") {
+        Some(res) => res,
+        None => {
+            return (input, "");
+        }
+    };
 
-   let arg = parts.next().unwrap_or("");
+    return (cmd, args);
+}
 
-   return (cmd, arg)
+fn echo(args: &str) {
+    println!("{args}")
 }
 
 fn not_found(cmd_name: String) {
