@@ -51,7 +51,7 @@ fn type_fn(cmds: &Vec<&str>, arg: &str) {
 
     match idx {
         Some(_) => println!("{arg} is a shell builtin"),
-        None => print!("{}: command not found", arg),
+        None => println!("{}: not found", arg),
     }
 }
 
