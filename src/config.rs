@@ -44,8 +44,6 @@ impl Config {
             }
         }
 
-        println!("binary len: {:#?}", self.binaries.len());
-
         Ok(())
     }
 
