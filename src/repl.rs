@@ -28,7 +28,6 @@ impl Repl {
             match self.parse_command(&input) {
                 Ok((cmd, args)) => match cmd.as_str() {
                     "exit" => {
-                        println!("Exiting shell...");
                         process::exit(0);
                     },
                     "echo" => self.echo(args),

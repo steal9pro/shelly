@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fs::{self};
 use std::path::Path;
 use std::{env, io};
@@ -6,6 +6,7 @@ use std::{env, io};
 pub struct Config {
     paths: Vec<String>,
     binaries: HashMap<String, String>,
+    buildin_binaries: HashSet<String>,
 }
 
 impl Config {
@@ -16,10 +17,19 @@ impl Config {
         let mut config = Config {
             paths,
             binaries: HashMap::new(),
+            buildin_binaries: HashSet::new(),
         };
+
+        config.fill_buildin();
         config.scan_binary();
 
         config
+    }
+
+    fn fill_buildin(&mut self) {
+        self.buildin_binaries.insert("echo".to_string());
+        self.buildin_binaries.insert("exit".to_string());
+        self.buildin_binaries.insert("type".to_string());
     }
 
     fn scan_binary(&mut self) -> io::Result<()> {
@@ -36,8 +46,11 @@ impl Config {
                     for entry in entries {
                         let entry = entry?;
                         if let Some(file_name) = entry.file_name().to_str() {
-                            let path = entry.path().to_str().unwrap().to_string();
-                            self.binaries.insert(file_name.to_string(), path);
+                            let file_name = file_name.to_string();
+                            if !self.binaries.contains_key(&file_name) {
+                                let path = entry.path().to_str().unwrap().to_string();
+                                self.binaries.insert(file_name.to_string(), path);
+                            }
                         }
                     }
                 }
@@ -48,7 +61,10 @@ impl Config {
         Ok(())
     }
 
-    pub fn check_binary(&self, search: &String) -> Option<&String> {
-        self.binaries.get(search)
+    pub fn check_binary(&self, search: &String) -> Option<String> {
+        if self.buildin_binaries.contains(search) {
+            return Some("a shell builtin".to_string())
+        }
+        self.binaries.get(search).cloned()
     }
 }
