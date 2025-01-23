@@ -59,7 +59,7 @@ impl Repl {
 
     fn type_fn(&self, arg: String) {
         match self.config.check_binary(&arg) {
-            Some(_) => println!("{arg} is a shell builtin"),
+            Some(path) => println!("{arg} is {path}"),
             None => println!("{}: not found", arg),
         }
     }

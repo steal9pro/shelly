@@ -1,11 +1,11 @@
-use std::collections::HashSet;
+use std::collections::HashMap;
 use std::fs::{self};
 use std::path::Path;
 use std::{env, io};
 
 pub struct Config {
     paths: Vec<String>,
-    binaries: HashSet<String>,
+    binaries: HashMap<String, String>,
 }
 
 impl Config {
@@ -15,7 +15,7 @@ impl Config {
 
         let mut config = Config {
             paths,
-            binaries: HashSet::new(),
+            binaries: HashMap::new(),
         };
         config.scan_binary();
 
@@ -36,7 +36,8 @@ impl Config {
                     for entry in entries {
                         let entry = entry?;
                         if let Some(file_name) = entry.file_name().to_str() {
-                            self.binaries.insert(file_name.to_string());
+                            let path = entry.path().to_str().unwrap().to_string();
+                            self.binaries.insert(file_name.to_string(), path);
                         }
                     }
                 }
@@ -47,11 +48,7 @@ impl Config {
         Ok(())
     }
 
-    pub fn check_binary(&self, search: &String) -> Option<bool> {
-        if self.binaries.contains(search) {
-            Some(true)
-        } else {
-            None
-        }
+    pub fn check_binary(&self, search: &String) -> Option<&String> {
+        self.binaries.get(search)
     }
 }
