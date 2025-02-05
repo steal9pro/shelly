@@ -1,5 +1,5 @@
 use crate::config::Config;
-use std::ffi::OsStr;
+use std::ffi::{OsStr, OsString};
 use std::io::{self, Write};
 use std::process::{exit, Command};
 
@@ -14,7 +14,7 @@ impl Repl {
         Repl { config }
     }
 
-    pub fn start(&self) {
+    pub fn start(&mut self) {
         loop {
             print!("$ ");
 
@@ -32,7 +32,7 @@ impl Repl {
                         exit(0);
                     }
                     "echo" => self.echo(args),
-                    "type" => self.type_fn(cmd),
+                    "type" => self.type_fn(args),
                     _ => self.lauch(cmd, args),
                     // _ => self.not_found(input),
                 },
@@ -58,27 +58,43 @@ impl Repl {
 
         Ok((cmd, args))
     }
-
-    fn lauch<T>(&self, cmd: String, args: T)
+    fn lauch<T>(&mut self, cmd: String, args: T)
     where
         T: IntoIterator,
         T::Item: AsRef<OsStr>,
     {
-        Command::new(cmd)
+        let args: Vec<_> = args
+            .into_iter()
+            .map(|a| a.as_ref().to_os_string())
+            .collect();
+
+        if which::which(&cmd).is_err() {
+            eprintln!("{cmd}: command not found");
+            return
+        }
+
+        let output = Command::new(cmd)
             .args(args)
-            .spawn()
+            .output()
             .expect("command to start");
+
+        io::stdout().write_all(&output.stdout).unwrap();
+        io::stderr().write_all(&output.stderr).unwrap();
     }
 
-    fn type_fn(&self, arg: String) {
-        match self.config.check_binary(&arg) {
-            Some(path) => println!("{arg} is {path}"),
-            None => println!("{}: not found", arg),
+    fn type_fn(&mut self, args: Vec<String>) {
+        self.config.scan_binary().unwrap();
+
+        let cmd_name = args[0].clone();
+        match self.config.check_binary(&cmd_name) {
+            Some(path) => println!("{cmd_name} is {path}"),
+            None => println!("{}: not found", cmd_name),
         }
     }
 
     fn echo(&self, args: Vec<String>) {
-        println!("{:#?}", args)
+        let line = args.join(" ");
+        println!("{line}")
     }
 
     fn not_found(&self, cmd_name: String) {

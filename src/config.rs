@@ -28,11 +28,11 @@ impl Config {
 
     fn fill_buildin(&mut self) {
         self.buildin_binaries.insert("echo".to_string());
-        self.buildin_binaries.insert("exit".to_string());
         self.buildin_binaries.insert("type".to_string());
+        self.buildin_binaries.insert("exit".to_string());
     }
 
-    fn scan_binary(&mut self) -> io::Result<()> {
+    pub fn scan_binary(&mut self) -> io::Result<()> {
         for p in &self.paths {
             let path = Path::new(p);
 
@@ -63,7 +63,7 @@ impl Config {
 
     pub fn check_binary(&self, search: &String) -> Option<String> {
         if self.buildin_binaries.contains(search) {
-            return Some("a shell builtin".to_string())
+            return Some("a shell builtin".to_string());
         }
         self.binaries.get(search).cloned()
     }
