@@ -29,6 +29,7 @@ impl Config {
     fn fill_buildin(&mut self) {
         self.buildin_binaries.insert("echo".to_string());
         self.buildin_binaries.insert("type".to_string());
+        self.buildin_binaries.insert("pwd".to_string());
         self.buildin_binaries.insert("exit".to_string());
     }
 

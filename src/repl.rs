@@ -1,6 +1,7 @@
 use crate::config::Config;
 use std::ffi::{OsStr, OsString};
 use std::io::{self, Write};
+use std::os::unix::ffi::OsStrExt;
 use std::process::{exit, Command};
 
 pub struct Repl {
@@ -33,6 +34,7 @@ impl Repl {
                     }
                     "echo" => self.echo(args),
                     "type" => self.type_fn(args),
+                    "pwd" => self.pwd(),
                     _ => self.lauch(cmd, args),
                     // _ => self.not_found(input),
                 },
@@ -70,7 +72,7 @@ impl Repl {
 
         if which::which(&cmd).is_err() {
             eprintln!("{cmd}: command not found");
-            return
+            return;
         }
 
         let output = Command::new(cmd)
@@ -95,6 +97,18 @@ impl Repl {
     fn echo(&self, args: Vec<String>) {
         let line = args.join(" ");
         println!("{line}")
+    }
+
+    fn pwd(&self) {
+        let path = std::env::current_dir().unwrap();
+        let os_str = path.as_os_str().to_str().unwrap();
+
+        let new_line_str = "\n".to_string();
+        let str_list = vec![os_str, new_line_str.as_str()];
+
+        let res = str_list.join("");
+
+        io::stdout().write_all(res.as_bytes()).unwrap()
     }
 
     fn not_found(&self, cmd_name: String) {
