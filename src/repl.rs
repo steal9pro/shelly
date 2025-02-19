@@ -116,9 +116,18 @@ impl Repl {
         if args.len() > 1 {
             return;
         }
+        let path_str = &args[0];
 
-        let path = Path::new(&args[0]);
-        let dir = std::env::set_current_dir(path);
+        let path = Path::new(&path_str);
+        match std::env::set_current_dir(path) {
+            Ok(()) => {}
+            Err(e) if e.kind() == io::ErrorKind::NotFound => {
+                eprintln!("cd: {path_str}: No such file or directory");
+            }
+            Err(err) => {
+                eprintln!("{err}")
+            }
+        }
     }
 
     fn not_found(&self, cmd_name: String) {
