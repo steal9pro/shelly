@@ -1,4 +1,5 @@
 use crate::config::Config;
+use std::env;
 use std::ffi::{OsStr, OsString};
 use std::io::{self, Write};
 use std::path::Path;
@@ -116,7 +117,9 @@ impl Repl {
         if args.len() > 1 {
             return;
         }
-        let path_str = &args[0];
+        let mut path_str = args[0].clone();
+
+        path_str = self.replace_home(path_str);
 
         let path = Path::new(&path_str);
         match std::env::set_current_dir(path) {
@@ -128,6 +131,18 @@ impl Repl {
                 eprintln!("{err}")
             }
         }
+    }
+
+    fn replace_home(&self, path_str: String) -> String {
+        if !path_str.contains("~") {
+            return path_str.clone();
+        }
+
+        let home = env::var("HOME").unwrap_or_default();
+        let home_path = String::from(home);
+        let path_str = path_str.replace("~", home_path.as_str());
+
+        path_str
     }
 
     fn not_found(&self, cmd_name: String) {
