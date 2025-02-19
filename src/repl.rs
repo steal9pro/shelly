@@ -1,7 +1,7 @@
 use crate::config::Config;
 use std::ffi::{OsStr, OsString};
 use std::io::{self, Write};
-use std::os::unix::ffi::OsStrExt;
+use std::path::Path;
 use std::process::{exit, Command};
 
 pub struct Repl {
@@ -35,6 +35,7 @@ impl Repl {
                     "echo" => self.echo(args),
                     "type" => self.type_fn(args),
                     "pwd" => self.pwd(),
+                    "cd" => self.cd(args),
                     _ => self.lauch(cmd, args),
                     // _ => self.not_found(input),
                 },
@@ -109,6 +110,15 @@ impl Repl {
         let res = str_list.join("");
 
         io::stdout().write_all(res.as_bytes()).unwrap()
+    }
+
+    fn cd(&self, args: Vec<String>) {
+        if args.len() > 1 {
+            return;
+        }
+
+        let path = Path::new(&args[0]);
+        let dir = std::env::set_current_dir(path);
     }
 
     fn not_found(&self, cmd_name: String) {
